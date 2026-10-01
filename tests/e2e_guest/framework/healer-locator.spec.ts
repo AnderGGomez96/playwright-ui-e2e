@@ -168,4 +168,54 @@ test.describe('API de proyección de locators del healer', () => {
       ).toHaveCount(1);
     });
   });
+
+  test('HL-05: proyectar locators no gasta la escalera ni deja rastro de curación', async ({ healer, loginPage, page }) => {
+    const specsPresentes: LocatorSpec[] = [
+      loginLocators.loginEmail,
+      loginLocators.loginPassword,
+    ];
+    const specsAusentes: LocatorSpec[] = [
+      loginLocators.logoutLink,
+      loginLocators.deleteAccountLink,
+      loginLocators.loginError,
+    ];
+
+    await test.step('Dado que estoy en la página de inicio de sesión sin sesión', async () => {
+      await expect(page, 'Debo estar en la página de inicio de sesión').toHaveURL(/\/login$/);
+    });
+
+    await test.step('Cuando proyecto repetidamente locators presentes y ausentes por la healer', async () => {
+      for (let ronda = 0; ronda < 2; ronda++) {
+        for (const spec of specsPresentes) {
+          const locator = ronda === 0
+            ? healer.locator(spec)
+            : healer.locator(spec, cssCandidateIndex(spec));
+          await expect(
+            locator,
+            `El locator presente "${spec.key}" debe encontrar un único elemento real sin gastar la escalera`,
+          ).toHaveCount(1);
+        }
+        for (const spec of specsAusentes) {
+          await expect(
+            healer.locator(spec, cssCandidateIndex(spec)),
+            `El locator ausente "${spec.key}" debe confirmar su ausencia real sin gastar la escalera`,
+          ).toHaveCount(0);
+        }
+      }
+    });
+
+    await test.step('Entonces la proyección no registra ningún evento de healing', async () => {
+      expect(
+        healer.events,
+        'Proyectar locators sin resolución no debe registrar eventos de healing',
+      ).toHaveLength(0);
+    });
+
+    await test.step('Y no registra niveles de caché ni de IA', async () => {
+      expect(
+        healer.events.filter((event) => event.level === 'cache' || event.level === 'ai'),
+        'Proyectar locators sin resolución no debe generar eventos de nivel cache ni ai',
+      ).toHaveLength(0);
+    });
+  });
 });
