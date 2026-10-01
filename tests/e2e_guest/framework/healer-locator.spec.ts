@@ -1,5 +1,5 @@
 import { test, expect } from '../../../src/fixtures/base';
-import { cssCandidateIndex } from '../../../src/healing/locator-factory';
+import { candidateToLocator, cssCandidateIndex } from '../../../src/healing/locator-factory';
 import type { LocatorSpec } from '../../../src/healing/types';
 import { loginLocators } from '../../../src/locators/login.locators';
 import { signupLocators } from '../../../src/locators/signup.locators';
@@ -75,6 +75,97 @@ test.describe('API de proyección de locators del healer', () => {
         healer.locator(loginLocators.logoutLink, cssCandidateIndex(loginLocators.logoutLink)),
         'Sin sesión, el enlace Logout no debe existir en el navbar',
       ).toHaveCount(0);
+    });
+  });
+
+  test('HL-03: un índice de candidato fuera de rango falla con la key y el índice pedido', async ({ healer, loginPage, page }) => {
+    await test.step('Dado que estoy en la página de inicio de sesión sin sesión', async () => {
+      await expect(page, 'Debo estar en la página de inicio de sesión').toHaveURL(/\/login$/);
+    });
+
+    await test.step('Cuando pido el índice negativo -1', async () => {
+      expect(
+        () => healer.locator(loginLocators.loginEmail, -1),
+        'Un índice negativo debe lanzar RangeError en vez de devolver un locator inservible',
+      ).toThrow(RangeError);
+      expect(
+        () => healer.locator(loginLocators.loginEmail, -1),
+        'El error debe nombrar la key loginEmail y el índice -1',
+      ).toThrow(/loginEmail/);
+      expect(
+        () => healer.locator(loginLocators.loginEmail, -1),
+        'El error debe incluir el índice -1 pedido',
+      ).toThrow(/-1/);
+    });
+
+    await test.step('Y pido justo el primer índice inválido, candidates.length', async () => {
+      const fueraDeRango = loginLocators.loginEmail.candidates.length;
+      expect(
+        () => healer.locator(loginLocators.loginEmail, fueraDeRango),
+        'Pedir candidates.length debe lanzar RangeError porque el último índice válido es length - 1',
+      ).toThrow(RangeError);
+      expect(
+        () => healer.locator(loginLocators.loginEmail, fueraDeRango),
+        'El mensaje debe nombrar la key loginEmail y el índice fuera de rango',
+      ).toThrow(new RegExp(`Índice ${fueraDeRango} fuera de rango para el spec "loginEmail"`));
+    });
+
+    await test.step('Y pido un índice claramente desmedido como 99', async () => {
+      expect(
+        () => healer.locator(loginLocators.loginEmail, 99),
+        'Un índice desmedido debe lanzar RangeError, no devolver un locator silencioso',
+      ).toThrow(RangeError);
+      expect(
+        () => healer.locator(loginLocators.loginEmail, 99),
+        'El error debe nombrar la key loginEmail',
+      ).toThrow(/loginEmail/);
+      expect(
+        () => healer.locator(loginLocators.loginEmail, 99),
+        'El error debe incluir el índice 99 pedido',
+      ).toThrow(/99/);
+    });
+
+    await test.step('Y el último índice válido se proyecta y es visible', async () => {
+      const ultimoValido = loginLocators.loginEmail.candidates.length - 1;
+      expect(
+        () => healer.locator(loginLocators.loginEmail, ultimoValido),
+        'El último índice válido no debe lanzar',
+      ).not.toThrow();
+      await expect(
+        healer.locator(loginLocators.loginEmail, ultimoValido),
+        'El candidato del último índice válido debe apuntar al campo de email visible',
+      ).toBeVisible();
+    });
+  });
+
+  test('HL-04: un candidato ambiguo se acota con .first() y no rompe el modo estricto', async ({ healer, loginPage, page }) => {
+    const specAmbiguo: LocatorSpec = {
+      key: 'frameworkEmailAmbiguo',
+      description: 'Spec local cuyo único candidato css coincide con los dos campos de email de /login',
+      action: 'assert',
+      candidates: [{ strategy: 'css', value: 'input[placeholder="Email Address"]' }],
+    };
+
+    await test.step('Dado que estoy en la página de inicio de sesión sin sesión', async () => {
+      await expect(page, 'Debo estar en la página de inicio de sesión').toHaveURL(/\/login$/);
+    });
+
+    await test.step('Y confirmo que el candidato es ambiguo y coincide con dos campos reales', async () => {
+      await expect(
+        candidateToLocator(page, specAmbiguo.candidates[0]),
+        'El candidato ambiguo debe coincidir con los dos campos de email reales de la página',
+      ).toHaveCount(2);
+    });
+
+    await test.step('Cuando proyecto el locator ambiguo por la healer', async () => {
+      await expect(
+        healer.locator(specAmbiguo),
+        'El locator ambiguo debe acotarse con .first() y mostrar el primer campo de email sin violar el modo estricto',
+      ).toBeVisible();
+      await expect(
+        healer.locator(specAmbiguo),
+        'El locator acotado con .first() debe contar exactamente uno pese a las dos coincidencias reales',
+      ).toHaveCount(1);
     });
   });
 });
