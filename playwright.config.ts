@@ -39,9 +39,9 @@ export default defineConfig({
   projects: [
 
     // playwright.config.ts — (https://playwright.dev/docs/test-projects, https://playwright.dev/docs/test-configuration)
-{ name: 'setup', testMatch: /.*\.setup\.ts/ },
-{ name: 'chromium-guest', testIgnore: /e2e_auth\/*\/.*\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
-{ name: 'chromium-logged', testIgnore: /e2e_guest\/*\/.*\.spec\.ts/, use: { ...devices['Desktop Chrome'], storageState: 'tests/playwright/.auth/user.json' }, dependencies: ['setup'] },
+{ name: 'setup', testMatch: /.*\.setup\.spec\.ts/ },
+{ name: 'chromium-guest', testIgnore: [/e2e_auth\/.*\.spec\.ts/, /setup\/.*\.spec\.ts/], use: { ...devices['Desktop Chrome'] } },
+{ name: 'chromium-logged', testIgnore: [/e2e_guest\/.*\.spec\.ts/, /setup\/.*\.spec\.ts/], use: { ...devices['Desktop Chrome'], storageState: 'tests/playwright/.auth/user.json' }, dependencies: ['setup'] },
     /*
     {
       name: 'firefox',
