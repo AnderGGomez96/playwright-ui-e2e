@@ -1,6 +1,7 @@
 import { type Page, expect } from '@playwright/test'
 import type { Healer } from '../healing'
-import { loginLocators } from '../locators/login.locators'
+import { loginLocators, loginStableSelectors } from '../locators/login.locators'
+import { signupStableSelectors } from '../locators/signup.locators'
 
 /** Campo del formulario de login. */
 export type LoginField = 'email' | 'password'
@@ -69,17 +70,17 @@ export class LoginPage {
     }
 
     async expectAuthFormsHidden(): Promise<void> {
-        await expect(this.page.locator('input[data-qa="login-email"]')).toHaveCount(0);
-        await expect(this.page.locator('input[data-qa="signup-name"]')).toHaveCount(0);
+        await expect(this.page.locator(loginStableSelectors.emailInput)).toHaveCount(0);
+        await expect(this.page.locator(signupStableSelectors.nameInput)).toHaveCount(0);
     }
 
     async expectLoggedOutNav(): Promise<void> {
-        await expect(this.page.locator('a[href="/logout"]')).toHaveCount(0);
-        await expect(this.page.locator('a[href="/delete_account"]')).toHaveCount(0);
+        await expect(this.page.locator(loginStableSelectors.logoutLink)).toHaveCount(0);
+        await expect(this.page.locator(loginStableSelectors.deleteAccountLink)).toHaveCount(0);
     }
 
     async expectNoLoginError(): Promise<void> {
-        await expect(this.page.locator('.login-form p')).toHaveCount(0);
+        await expect(this.page.locator(loginStableSelectors.formError)).toHaveCount(0);
     }
 
     private async validationMessage(field: LoginField): Promise<string> {

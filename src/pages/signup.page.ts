@@ -1,7 +1,7 @@
 import { type Page, expect } from '@playwright/test'
 import type { Healer } from '../healing'
 import type { LocatorSpec } from '../healing/types'
-import { signupLocators } from '../locators/signup.locators'
+import { signupLocators, signupStableSelectors } from '../locators/signup.locators'
 import { loginLocators } from '../locators/login.locators'
 
 /** Campo del formulario de registro del paso 1. */
@@ -81,12 +81,12 @@ export class SignupPage {
     }
 
     async expectAccountInformationHidden(): Promise<void> {
-        await expect(this.page.locator('h2:has-text("Enter Account Information")')).toHaveCount(0);
+        await expect(this.page.locator(signupStableSelectors.accountHeading)).toHaveCount(0);
     }
 
     async expectAccountInformationVisible(): Promise<void> {
-        await expect(this.page.locator('h2:has-text("Enter Account Information")')).toBeVisible();
-        await expect(this.page.locator('input[data-qa="password"]')).toBeVisible();
+        await expect(this.page.locator(signupStableSelectors.accountHeading)).toBeVisible();
+        await expect(this.page.locator(signupStableSelectors.accountPasswordInput)).toBeVisible();
     }
 
     async fillAccountName(name: string) {

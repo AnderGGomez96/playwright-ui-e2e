@@ -3,6 +3,18 @@ import type { LocatorSpec } from '../healing/types'
 const SOURCE = 'src/locators/signup.locators.ts'
 
 /**
+ * Selectores estables del área de registro (contrato H-01).
+ *
+ * Fuente única para los candidatos `css` de los `LocatorSpec` y para las
+ * aserciones de ausencia de los POM: estas últimas no pasan por el healer.
+ */
+export const signupStableSelectors = {
+    nameInput: 'input[data-qa="signup-name"]',
+    accountHeading: 'h2:has-text("Enter Account Information")',
+    accountPasswordInput: 'input[data-qa="password"]',
+} as const
+
+/**
  * Locators del flujo de registro.
  *
  * Paso 1 ("New User Signup!" en `/login`): nombre, email y botón Signup.
@@ -19,7 +31,7 @@ export const signupLocators = {
         candidates: [
             //@heal-target:signupName
             { strategy: 'placeholder', value: 'Name', within: 'form[action="/signup"]' },
-            { strategy: 'css', value: 'input[data-qa="signup-name"]' },
+            { strategy: 'css', value: signupStableSelectors.nameInput },
         ]
     } satisfies LocatorSpec,
 
@@ -66,7 +78,7 @@ export const signupLocators = {
         sourceFile: SOURCE,
         candidates: [
             //@heal-target:accountInformationHeading
-            { strategy: 'css', value: 'h2:has-text("Enter Account Information")' },
+            { strategy: 'css', value: signupStableSelectors.accountHeading },
             { strategy: 'text', value: 'Enter Account Information', within: '.signup-form' },
         ]
     } satisfies LocatorSpec,
@@ -126,7 +138,7 @@ export const signupLocators = {
         sourceFile: SOURCE,
         candidates: [
             //@heal-target:accountPassword
-            { strategy: 'css', value: 'input[data-qa="password"]' },
+            { strategy: 'css', value: signupStableSelectors.accountPasswordInput },
             { strategy: 'css', value: '#password' },
         ]
     } satisfies LocatorSpec,

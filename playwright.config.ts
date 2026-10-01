@@ -13,6 +13,16 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
+ * Workers del runner: 1 en CI, automático en local.
+ * `E2E_WORKERS` lo fija (p. ej. `1` cuando el sitio externo está bajo carga).
+ */
+function envWorkers(): number | undefined {
+  const parsed = Number(process.env.E2E_WORKERS)
+  if (Number.isFinite(parsed) && parsed > 0) return parsed
+  return process.env.CI ? 1 : undefined
+}
+
+/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
@@ -23,8 +33,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Workers: 1 en CI, automático en local; E2E_WORKERS lo fija. */
+  workers: envWorkers(),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   //reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
