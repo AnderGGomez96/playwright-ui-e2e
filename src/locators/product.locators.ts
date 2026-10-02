@@ -212,4 +212,80 @@ export const productLocators = {
     ],
   } satisfies LocatorSpec,
 
+  brandLinks: {
+    key: 'brandLinks',
+    description: 'Enlaces del sidebar de marcas (colección, para leer el conteo en vivo)',
+    action: 'read',
+    sourceFile: SOURCE,
+    candidates: [
+      //@heal-target:brandLinks
+      { strategy: 'css', value: '.brands-name a' },
+    ],
+  } satisfies LocatorSpec,
+
+  brands(brand: string): LocatorSpec {
+    return {
+      key: `brand.${slug(brand)}`,
+      description: `Enlace de la marca ${brand} en el sidebar`,
+      action: 'click',
+      sourceFile: SOURCE,
+      candidates: [
+        //@heal-target:brands
+        { strategy: 'role', role: 'link', name: brand, within: '.brands-name' },
+        { strategy: 'css', value: `.brands-name a:has-text(${JSON.stringify(brand)})` },
+      ],
+    } satisfies LocatorSpec
+  },
+
+  categoryLinks: {
+    key: 'categoryLinks',
+    description: 'Enlaces de categorías del acordeón (colección)',
+    action: 'read',
+    sourceFile: SOURCE,
+    candidates: [
+      //@heal-target:categoryLinks
+      { strategy: 'css', value: '#accordian a[href^="/category_products/"]' },
+    ],
+  } satisfies LocatorSpec,
+
+  categoryToggle(parent: string): LocatorSpec {
+    return {
+      key: `categoryToggle.${slug(parent)}`,
+      description: `Encabezado ${parent} del acordeón de categorías`,
+      action: 'click',
+      sourceFile: SOURCE,
+      candidates: [
+        //@heal-target:categoryToggle
+        // El nombre accesible del encabezado viene con espacio inicial (badge)
+        // y "Men" colisiona con "Women": se ancla en el href estable (DEC-03, sonda).
+        { strategy: 'css', value: `#accordian .panel-heading a[href="#${parent}"]` },
+      ],
+    } satisfies LocatorSpec
+  },
+
+  categoryLink(href: string): LocatorSpec {
+    const id = href.split('/').filter(Boolean).pop() ?? href
+    return {
+      key: `category.${slug(id)}`,
+      description: `Enlace de la categoría ${href} en el acordeón`,
+      action: 'click',
+      sourceFile: SOURCE,
+      candidates: [
+        //@heal-target:categoryLink
+        { strategy: 'css', value: `a[href="${href}"]`, within: '#accordian' },
+      ],
+    } satisfies LocatorSpec
+  },
+
+  productDetailLinks: {
+    key: 'productDetailLinks',
+    description: 'Enlaces "View Product" de todas las tarjetas del listado (colección)',
+    action: 'read',
+    sourceFile: SOURCE,
+    candidates: [
+      //@heal-target:productDetailLinks
+      { strategy: 'css', value: 'div.product-image-wrapper a[href^="/product_details/"]' },
+    ],
+  } satisfies LocatorSpec,
+
 }
