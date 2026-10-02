@@ -50,6 +50,29 @@ export const BRANDS = [
   'Biba',
 ] as const
 
+/** Datos de una tarjeta de pago de prueba (checkout CT-04). */
+export interface TestCard {
+  /** Nombre que figura en la tarjeta. */
+  name: string
+  /** Número de tarjeta de prueba. */
+  number: string
+  /** Código de seguridad. */
+  cvc: string
+  /** Mes de expiración (`MM`). */
+  month: string
+  /** Año de expiración (`YYYY`). */
+  year: string
+}
+
+/** Tarjeta de prueba aceptada por la pasarela del sitio (sonda 2026-10-02). */
+export const TEST_CARD: TestCard = {
+  name: 'Locanto Test',
+  number: '4242424242424242',
+  cvc: '311',
+  month: '12',
+  year: '2030',
+}
+
 /** Categoría/subcategoría del acordeón con su ruta y la cadena del detalle. */
 export interface ProductCategory {
   /** Categoría padre del acordeón (p. ej. `Women`). */
