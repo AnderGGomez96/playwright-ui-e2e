@@ -203,3 +203,89 @@ por git).
   `56252c2`, `fb678e4`, `f4ac276`, `d9f4dc0`) con tags
   `spec-healer-locator-t01..t07`; merge `--no-ff` a `develop` + tag
   `spec-healer-locator`; PR `develop` → `main`.
+
+---
+
+## C-008 — 2026-10-02 — BL-001: Módulo producto/carrito robusto (absorbe BL-002 y BL-003)
+
+- **Alcance**: regularización del WIP de producto/carrito y absorción aprobada
+  por la usuaria de los 15 escenarios aportados (búsqueda real/vacía/SQLi/
+  inexistente, detalle, marcas y categorías con filtro verificado producto a
+  producto, inexistentes controlados, navbar guest/logged, carrito vacío, modal
+  de checkout invitado, login desde checkout y compra completa con sesión).
+  Cierra **D-004** (`searchButton` anclado a `#submit_search`; `productCartLink`
+  como `role:'link'` con nombre 'View Cart') y **D-005** (canon `Madame`).
+  `Healer`, `governor`, `cache`, `patch-writer` y motores de IA **sin cambios**.
+- **Archivos**: `src/constant/navbar.options.ts`, `src/constant/product-data.ts`
+  (nuevo), `src/locators/{navbar,product,cart,checkout}.locators.ts`
+  (`checkout` nuevo; `cartStableSelectors` eliminado), `src/components/navbar.component.ts`,
+  `src/pages/{product,cart,checkout}.page.ts` (`checkout` nuevo),
+  `src/fixtures/base.ts` (fixtures `navbar`, `productPage`, `cartPage`,
+  `cartWithProduct`, `checkoutWithProduct`), `tests/e2e_guest/{product,navbar,cart}/`,
+  `tests/e2e_auth/{navbar,cart}/` (+ docs locales `.opencode/` y `AGENTS.md`, no
+  commiteables).
+- **Verificación**: `revision-spec` = apto (tras corregir F1–F9); T-01..T-06 con
+  dev→tester→auditor (veredicto `pasa` en las 6); suite completa **46/46** (dev
+  run2 4.7 min + tester 4.5 min) con `E2E_WORKERS=1` + `E2E_TEST_DELAY_MS=2500`;
+  auth 19/19 y framework 7/7 sin regresión; `npx tsc --noEmit` = 0; guard de
+  cierre = 0 (pages/components/fixtures **y** `src/locators`); healing 655
+  eventos 100 % `primary`, 0 `fallback`/`cache`/`ai`, `autoRecoveries = 0`;
+  legibilidad verificada (IDs PR/NB/CT, steps de negocio y mensajes).
+- **Resultado**: sin regresión (evaluación `sin regresión`); el módulo producto/
+  carrito/checkout queda verde y bajo la regla §0.1; navbar con href del DOM vivo
+  y distinción de sesión; carrito con reset determinista (la cuenta seeded
+  acumula) y compra con `Download Invoice` validada por evento.
+- **Seguridad**: `revision-seguridad` sin hallazgos (sin secretos/PII/deps
+  nuevas; `TEST_CARD` es tarjeta ficticia; payloads hostiles tratados como dato).
+- **Deuda**: **D-007** queda **mitigada, no cerrada**: 0 ocurrencias del crash en
+  4 corridas live con throttle; la primera corrida del dev registró 3 fallos
+  transitorios por latencia (`HealingExhaustedError` en R-08/CT-03/PR-06),
+  reproducidos verdes aislados y no ocultados (evidencia `playwright-full-run1.txt`
+  y `repro-*.log`). BL-001/BL-002/BL-003 quedan cubiertos por este cambio; el
+  backlog siguiente (BL-004, BL-005, BL-006…) no se toca.
+- **Evidencia**: `.local/evidencia/C-008/` (`resumen.md`,
+  `revision-seguridad.md`, `playwright-full-run2.txt`,
+  `run-full-attempt1.log`, `healing-summary.txt`,
+  `healing-metrics-tester-run.txt`, `guard-global.txt`, `guard-locators.txt`,
+  `tsc.txt`, `d007-check.txt`, `legibility.txt`, `probe-*.txt`, `repro-*.log`,
+  `json-ct02.json`) y `.local/evidencia/evidencia-evaluacion-2026-10-02.md`.
+- **Git**: commits por tarea T-01..T-05 (`d484e56`, `e53edff`, `b3b11d6`,
+  `9ef8b36`, `df67596`) con tags `spec-product-t01..t05`; merge `--no-ff` a
+  `develop` + tag `spec-product`; PR `develop` → `main`.
+
+---
+
+## C-009 — 2026-10-02 — Ampliación de cierre: `Healer.locatorAll` y fixtures del carrito sin redundancia
+
+- **Alcance**: pedido de la usuaria antes del merge a `main`. (1) Nueva API
+  `Healer.locatorAll(spec, index = 0)` — proyección pura multi-match (sin
+  `.first()`, sin escalera/caché/IA/eventos, `RangeError` con key e índice) —
+  con `HL-08` en el spec de framework y migración de los 5 usos de
+  `candidateToLocator` en POM (`resultCards`, `brandSidebarCounts`,
+  `categorySidebar`, `resultDetailUrls`, `clearCart`); ningún POM conoce ya la
+  fábrica. (2) Consolidación de fixtures: se elimina `checkoutWithProduct` (duplicaba la
+  siembra); `CartPage.proceedToCheckout(): Promise<CheckoutPage>` y
+  `cartWithProduct` con reset siempre (`clearCart`, no-op si vacío),
+  determinista en guest y logged; CT-04 usa `cartWithProduct` +
+  `proceedToCheckout()`. Quedan `cartPage` (vacío) y `cartWithProduct`
+  (sembrado), estados distintos, sin redundancia.
+- **Archivos**: `src/healing/healer.ts`, `src/pages/product.page.ts`,
+  `src/pages/cart.page.ts`, `src/fixtures/base.ts`,
+  `tests/e2e_guest/framework/healer-locator.spec.ts` y
+  `tests/e2e_auth/cart/cart.spec.ts` (+ `design.md`/`tasks.md` locales).
+- **Verificación**: `revision-spec` no aplicó (ampliación durante el cierre);
+  T-07/T-08 con dev→tester→auditor (`pasa` en ambas); suite completa **47/47**
+  (4.7 min, throttle); `tsc` = 0; guards global y de locators = 0;
+  `candidateToLocator` en POM = 0; healing 658 eventos 100 % `primary`, 0
+  `fallback`/`cache`/`ai`, `autoRecoveries = 0`.
+- **Resultado**: sin regresión (+1 test); la regla §0.1 no tiene excepciones y
+  el contrato de fixtures pierde un fixture redundante.
+- **Seguridad**: `revision-seguridad` sin hallazgos.
+- **Deuda**: ninguna nueva; D-007 sigue mitigada, no cerrada.
+- **Evidencia**: `.local/evidencia/C-009/` (`resumen.md`,
+  `revision-seguridad.md`, `playwright-full.txt`, `healing-summary.txt`,
+  `guard-global.txt`, `guard-locators.txt`, `tsc.txt`, `d007-check.txt`) y
+  `.local/evidencia/evidencia-evaluacion-2026-10-02-c009.md`.
+- **Git**: commits T-07 `b6ea7b4` y T-08 `ec81943` con tags
+  `spec-product-t07/t08`; merge `--no-ff` a `develop` + tag `spec-product`
+  reapuntado al merge final; PR #3 (`develop` → `main`) actualizado.

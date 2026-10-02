@@ -1,12 +1,19 @@
 import { test as base, expect } from '@playwright/test';
 import { LoginPage } from '../pages/login.page';
 import { SignupPage } from '../pages/signup.page';
+import { ProductPage } from '../pages/product.page';
+import { CartPage } from '../pages/cart.page';
 import { Healer} from '../healing/healer'
 import { loadHealingConfig, type HealingConfig } from '../healing/config'
+import { NavbarComponent } from '../components/navbar.component';
 
 type MyFixtures = {
     loginPage: LoginPage,
-    signupPage: SignupPage
+    signupPage: SignupPage,
+    navbar:NavbarComponent,
+    productPage: ProductPage,
+    cartPage: CartPage,
+    cartWithProduct: CartPage
 };
 
 type HealingFixtures = {
@@ -47,6 +54,10 @@ export const test = base.extend<MyFixtures & HealingFixtures & ThrottleFixtures>
         }
     }, { auto: true }],
 
+    navbar: async({healer}, use) => {
+        await use(new NavbarComponent(healer))
+    },
+
     loginPage: async ({ page,healer }, use) => {
         const loginpage = new LoginPage(page, healer);
         await loginpage.goto();
@@ -56,6 +67,26 @@ export const test = base.extend<MyFixtures & HealingFixtures & ThrottleFixtures>
         const signupPage = new SignupPage(page, healer);
         await signupPage.goto();
         await use(signupPage);
+    },
+    productPage: async ({ page,healer,navbar }, use) => {
+        const productpage = new ProductPage(page,healer,navbar);
+        await productpage.goto();
+        await use(productpage);
+    },
+    cartPage: async ({ page, healer }, use) => {
+        const cartPage = new CartPage(page, healer);
+        await cartPage.goto();
+        await use(cartPage);
+    },
+    cartWithProduct: async ({ productPage, cartPage }, use) => {
+        await cartPage.goto();
+        await cartPage.clearCart();
+        await productPage.goto();
+        await productPage.addProductToCart('Blue Top');
+        await cartPage.goto();
+        const row = await cartPage.productRow('Blue Top');
+        await expect(row, 'El carrito debe mostrar la fila del producto agregado').toBeVisible();
+        await use(cartPage);
     }
 });
 

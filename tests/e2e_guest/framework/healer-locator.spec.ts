@@ -2,6 +2,7 @@ import { test, expect } from '../../../src/fixtures/base';
 import { candidateToLocator, cssCandidateIndex } from '../../../src/healing/locator-factory';
 import type { LocatorSpec } from '../../../src/healing/types';
 import { loginLocators } from '../../../src/locators/login.locators';
+import { productLocators } from '../../../src/locators/product.locators';
 import { signupLocators } from '../../../src/locators/signup.locators';
 
 test.describe('API de proyección de locators del healer', () => {
@@ -244,6 +245,90 @@ test.describe('API de proyección de locators del healer', () => {
       expect(
         healer.events,
         'Diez proyecciones sobre elementos ausentes no deben registrar eventos de healing ni consumir curaciones',
+      ).toHaveLength(0);
+    });
+  });
+
+  test('HL-08: la proyección multi-match enumera todas las tarjetas del catálogo sin gastar la escalera', async ({ healer, page }) => {
+    await test.step('Dado que abro el catálogo completo de productos', async () => {
+      await page.goto('/products');
+      await expect(page, 'Debo estar en el catálogo completo de productos').toHaveURL(/\/products$/);
+    });
+
+    await test.step('Cuando proyecto las tarjetas como colección multi-match', async () => {
+      await expect(
+        healer.locator(productLocators.productCards),
+        'La proyección de una sola coincidencia debe fijar la primera tarjeta y no violar el modo estricto',
+      ).toHaveCount(1);
+
+      const tarjetas = healer.locatorAll(productLocators.productCards);
+      const totalTarjetas = await tarjetas.count();
+      const totalFichas = await healer.locatorAll(productLocators.productDetailLinks).count();
+      expect(
+        totalTarjetas,
+        'El catálogo completo debe tener más de una tarjeta para probar la colección',
+      ).toBeGreaterThan(1);
+      expect(
+        totalTarjetas,
+        'La proyección multi-match debe igualar el total de tarjetas del catálogo de esta corrida',
+      ).toBe(totalFichas);
+    });
+
+    await test.step('Y un índice de candidato válido, incluido el último, se proyecta sin lanzar', async () => {
+      const ultimoValido = productLocators.productCards.candidates.length - 1;
+      expect(
+        () => healer.locatorAll(productLocators.productCards, ultimoValido),
+        'El último índice de candidato válido no debe lanzar',
+      ).not.toThrow();
+
+      await expect(
+        healer.locatorAll(productLocators.searchBar, 1),
+        'Con un spec de dos candidatos, el índice 1 debe proyectar el campo de búsqueda una sola vez sin lanzar',
+      ).toHaveCount(1);
+    });
+
+    await test.step('Y un índice fuera de rango falla nombrando la key y el índice', async () => {
+      expect(
+        () => healer.locatorAll(productLocators.productCards, -1),
+        'Un índice negativo debe lanzar RangeError en vez de devolver un locator inservible',
+      ).toThrow(RangeError);
+      expect(
+        () => healer.locatorAll(productLocators.productCards, -1),
+        'El error debe nombrar la key productCards',
+      ).toThrow(/productCards/);
+      expect(
+        () => healer.locatorAll(productLocators.productCards, -1),
+        'El error debe incluir el índice -1 pedido',
+      ).toThrow(/-1/);
+
+      const fueraDeRango = productLocators.productCards.candidates.length;
+      expect(
+        () => healer.locatorAll(productLocators.productCards, fueraDeRango),
+        'Pedir candidates.length debe lanzar RangeError porque el último índice válido es length - 1',
+      ).toThrow(RangeError);
+      expect(
+        () => healer.locatorAll(productLocators.productCards, fueraDeRango),
+        'El mensaje debe nombrar la key productCards y el índice fuera de rango',
+      ).toThrow(new RegExp(`Índice ${fueraDeRango} fuera de rango para el spec "productCards"`));
+
+      expect(
+        () => healer.locatorAll(productLocators.searchBar, 2),
+        'Pedir el índice 2 en un spec de dos candidatos debe lanzar RangeError',
+      ).toThrow(RangeError);
+      expect(
+        () => healer.locatorAll(productLocators.searchBar, 2),
+        'El mensaje debe nombrar la key productSearchBar',
+      ).toThrow(/productSearchBar/);
+      expect(
+        () => healer.locatorAll(productLocators.searchBar, 2),
+        'El mensaje debe incluir el índice 2 fuera de rango',
+      ).toThrow(/2/);
+    });
+
+    await test.step('Entonces la proyección multi-match no registra ningún evento de healing', async () => {
+      expect(
+        healer.events,
+        'Proyectar colecciones sin resolución no debe registrar eventos de healing ni consumir curaciones',
       ).toHaveLength(0);
     });
   });
