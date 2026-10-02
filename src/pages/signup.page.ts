@@ -1,7 +1,8 @@
 import { type Page, expect } from '@playwright/test'
 import type { Healer } from '../healing'
+import { cssCandidateIndex } from '../healing/locator-factory'
 import type { LocatorSpec } from '../healing/types'
-import { signupLocators, signupStableSelectors } from '../locators/signup.locators'
+import { signupLocators } from '../locators/signup.locators'
 import { loginLocators } from '../locators/login.locators'
 
 /** Campo del formulario de registro del paso 1. */
@@ -25,7 +26,9 @@ export interface AccountDetails {
  * POM del flujo de registro.
  *
  * Paso 1 vive en `/login` (bloque "New User Signup!"); el paso 2 y el alta
- * corresponden a tareas posteriores del módulo.
+ * corresponden a tareas posteriores del módulo. Las ausencias (H-01) derivan
+ * su locator del propio `LocatorSpec` con `healer.locator` (traducción pura,
+ * sin escalera); la presencia en camino feliz va por `healer.resolve`.
  */
 export class SignupPage {
 
@@ -81,12 +84,14 @@ export class SignupPage {
     }
 
     async expectAccountInformationHidden(): Promise<void> {
-        await expect(this.page.locator(signupStableSelectors.accountHeading)).toHaveCount(0);
+        await expect(this.healer.locator(signupLocators.accountInformationHeading, cssCandidateIndex(signupLocators.accountInformationHeading))).toHaveCount(0);
     }
 
     async expectAccountInformationVisible(): Promise<void> {
-        await expect(this.page.locator(signupStableSelectors.accountHeading)).toBeVisible();
-        await expect(this.page.locator(signupStableSelectors.accountPasswordInput)).toBeVisible();
+        const heading = await this.healer.resolve(signupLocators.accountInformationHeading);
+        await expect(heading).toBeVisible();
+        const password = await this.healer.resolve(signupLocators.accountPassword);
+        await expect(password).toBeVisible();
     }
 
     async fillAccountName(name: string) {

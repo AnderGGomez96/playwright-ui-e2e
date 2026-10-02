@@ -1,7 +1,8 @@
 import { type Page, expect } from '@playwright/test'
 import type { Healer } from '../healing'
-import { loginLocators, loginStableSelectors } from '../locators/login.locators'
-import { signupStableSelectors } from '../locators/signup.locators'
+import { cssCandidateIndex } from '../healing/locator-factory'
+import { loginLocators } from '../locators/login.locators'
+import { signupLocators } from '../locators/signup.locators'
 
 /** Campo del formulario de login. */
 export type LoginField = 'email' | 'password'
@@ -9,8 +10,9 @@ export type LoginField = 'email' | 'password'
 /**
  * POM del flujo de login y del estado de sesión.
  *
- * Las acciones y lecturas van por el healer; las ausencias (H-01) usan
- * selectores estables dentro del POM con aserciones web-first, sin healer.
+ * Las acciones y lecturas van por el healer; las ausencias (H-01) derivan su
+ * locator del propio `LocatorSpec` con `healer.locator` (traducción pura,
+ * sin escalera) y aserciones web-first.
  */
 export class LoginPage {
 
@@ -70,17 +72,17 @@ export class LoginPage {
     }
 
     async expectAuthFormsHidden(): Promise<void> {
-        await expect(this.page.locator(loginStableSelectors.emailInput)).toHaveCount(0);
-        await expect(this.page.locator(signupStableSelectors.nameInput)).toHaveCount(0);
+        await expect(this.healer.locator(loginLocators.loginEmail, cssCandidateIndex(loginLocators.loginEmail))).toHaveCount(0);
+        await expect(this.healer.locator(signupLocators.signupName, cssCandidateIndex(signupLocators.signupName))).toHaveCount(0);
     }
 
     async expectLoggedOutNav(): Promise<void> {
-        await expect(this.page.locator(loginStableSelectors.logoutLink)).toHaveCount(0);
-        await expect(this.page.locator(loginStableSelectors.deleteAccountLink)).toHaveCount(0);
+        await expect(this.healer.locator(loginLocators.logoutLink, cssCandidateIndex(loginLocators.logoutLink))).toHaveCount(0);
+        await expect(this.healer.locator(loginLocators.deleteAccountLink, cssCandidateIndex(loginLocators.deleteAccountLink))).toHaveCount(0);
     }
 
     async expectNoLoginError(): Promise<void> {
-        await expect(this.page.locator(loginStableSelectors.formError)).toHaveCount(0);
+        await expect(this.healer.locator(loginLocators.loginError, cssCandidateIndex(loginLocators.loginError))).toHaveCount(0);
     }
 
     private async validationMessage(field: LoginField): Promise<string> {

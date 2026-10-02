@@ -162,3 +162,44 @@ por git).
   nuevo (y para la revisión retroactiva en curso).
 - **Evidencia**: `.local/evidencia/C-006/` (`resumen.md`,
   `report-steps.json`, `steps-resumen.txt`).
+
+---
+
+## C-007 — 2026-10-01 — BL-011: `Healer.locator(spec, índice)` sin resolución
+
+- **Alcance**: `Healer.locator(spec, index = 0): Locator` síncrono (traducción
+  pura `candidateToLocator(...).first()`, `RangeError` con key e índice fuera de
+  rango) y helper `cssCandidateIndex(spec)`; migración de los POM de login y
+  registro: ausencias → `healer.locator`, presencia → `healer.resolve`;
+  eliminación de `loginStableSelectors`/`signupStableSelectors` (css inline una
+  sola vez en cada `LocatorSpec`); specs de framework `HL-01..HL-07`; regla de
+  decisión §0.1 y guard nuevo en skill, agentes y `AGENTS.md`. `resolve`,
+  `governor`, `cache`, `patch-writer` y motores IA sin cambios.
+- **Archivos**: `src/healing/healer.ts`, `src/healing/locator-factory.ts`,
+  `src/locators/login.locators.ts`, `src/locators/signup.locators.ts`,
+  `src/pages/login.page.ts`, `src/pages/signup.page.ts`,
+  `tests/e2e_guest/framework/healer-locator.spec.ts`,
+  `tests/e2e_auth/framework/healer-locator.spec.ts` (+ `.opencode/` y
+  `AGENTS.md`, locales no commiteables).
+- **Verificación**: `revision-spec` = apto; T-01..T-08 con dev→tester→auditor
+  (veredicto `pasa` en las 8); suite completa 27/27 (2.3 min, throttle D-007);
+  auth 19/19; framework 7/7; `npx tsc --noEmit` = 0; guard = 0; healing 225
+  eventos 100 % `primary`, 0 `cache`/`ai`, `autoRecoveries = 0`; corrida con
+  `HEAL_MAX_PER_TEST=0` verde y control de sensibilidad con
+  `HealingGovernanceError` real.
+- **Resultado**: sin regresión (0 fallos; evaluación `sin regresión`); API sin
+  efectos consumida por los POM; una sola fuente de verdad también en las
+  ausencias.
+- **Seguridad**: `revision-seguridad` sin hallazgos (sin secretos/PII/deps
+  nuevas; permiso de agentes intacto).
+- **Deuda**: observaciones H-1/H-2 resueltas en el cierre (redacción del guard
+  y D-001/D-002 residuales en la skill); D-004/D-005/D-007 quedan fuera de la
+  rama (BL-001 producto/carrito en `stash`, se retoma al restaurarlo).
+- **Evidencia**: `.local/evidencia/C-007/` (`resumen.md`,
+  `revision-seguridad.md`, `playwright-full.txt`, `healing-summary.txt`,
+  `guard-selectores.txt`, `tsc.txt`) y
+  `.local/evidencia/evidencia-evaluacion-2026-10-01-c007.md`.
+- **Git**: commits por tarea T-01..T-07 (`c54022a`, `6f28753`, `f9a1096`,
+  `56252c2`, `fb678e4`, `f4ac276`, `d9f4dc0`) con tags
+  `spec-healer-locator-t01..t07`; merge `--no-ff` a `develop` + tag
+  `spec-healer-locator`; PR `develop` → `main`.
