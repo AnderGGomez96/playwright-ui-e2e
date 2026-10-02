@@ -218,4 +218,33 @@ test.describe('API de proyección de locators del healer', () => {
       ).toHaveLength(0);
     });
   });
+
+  test('HL-06: proyectar diez ausencias no agota el presupuesto de gobernanza', async ({ healer, loginPage, page }) => {
+    const specsAusentes: LocatorSpec[] = [
+      loginLocators.logoutLink,
+      loginLocators.deleteAccountLink,
+    ];
+    const totalIteraciones = 10;
+
+    await test.step('Dado que estoy en la página de inicio de sesión sin sesión', async () => {
+      await expect(page, 'Debo estar en la página de inicio de sesión sin sesión').toHaveURL(/\/login$/);
+    });
+
+    await test.step('Cuando proyecto diez veces los locators ausentes con su candidato css', async () => {
+      for (let iteracion = 0; iteracion < totalIteraciones; iteracion++) {
+        const spec = specsAusentes[iteracion % specsAusentes.length];
+        await expect(
+          healer.locator(spec, cssCandidateIndex(spec)),
+          `La iteración ${iteracion + 1} debe confirmar que "${spec.key}" está ausente sin gastar el presupuesto de gobernanza`,
+        ).toHaveCount(0);
+      }
+    });
+
+    await test.step('Entonces ninguna proyección registró un evento de curación', async () => {
+      expect(
+        healer.events,
+        'Diez proyecciones sobre elementos ausentes no deben registrar eventos de healing ni consumir curaciones',
+      ).toHaveLength(0);
+    });
+  });
 });
