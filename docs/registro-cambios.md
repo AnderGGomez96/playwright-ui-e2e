@@ -252,3 +252,40 @@ por git).
 - **Git**: commits por tarea T-01..T-05 (`d484e56`, `e53edff`, `b3b11d6`,
   `9ef8b36`, `df67596`) con tags `spec-product-t01..t05`; merge `--no-ff` a
   `develop` + tag `spec-product`; PR `develop` → `main`.
+
+---
+
+## C-009 — 2026-10-02 — Ampliación de cierre: `Healer.locatorAll` y fixtures del carrito sin redundancia
+
+- **Alcance**: pedido de la usuaria antes del merge a `main`. (1) Nueva API
+  `Healer.locatorAll(spec, index = 0)` — proyección pura multi-match (sin
+  `.first()`, sin escalera/caché/IA/eventos, `RangeError` con key e índice) —
+  con `HL-08` en el spec de framework y migración de los 5 usos de
+  `candidateToLocator` en POM (`resultCards`, `brandSidebarCounts`,
+  `categorySidebar`, `resultDetailUrls`, `clearCart`); ningún POM conoce ya la
+  fábrica. (2) Consolidación de fixtures: se elimina `checkoutWithProduct` (duplicaba la
+  siembra); `CartPage.proceedToCheckout(): Promise<CheckoutPage>` y
+  `cartWithProduct` con reset siempre (`clearCart`, no-op si vacío),
+  determinista en guest y logged; CT-04 usa `cartWithProduct` +
+  `proceedToCheckout()`. Quedan `cartPage` (vacío) y `cartWithProduct`
+  (sembrado), estados distintos, sin redundancia.
+- **Archivos**: `src/healing/healer.ts`, `src/pages/product.page.ts`,
+  `src/pages/cart.page.ts`, `src/fixtures/base.ts`,
+  `tests/e2e_guest/framework/healer-locator.spec.ts` y
+  `tests/e2e_auth/cart/cart.spec.ts` (+ `design.md`/`tasks.md` locales).
+- **Verificación**: `revision-spec` no aplicó (ampliación durante el cierre);
+  T-07/T-08 con dev→tester→auditor (`pasa` en ambas); suite completa **47/47**
+  (4.7 min, throttle); `tsc` = 0; guards global y de locators = 0;
+  `candidateToLocator` en POM = 0; healing 658 eventos 100 % `primary`, 0
+  `fallback`/`cache`/`ai`, `autoRecoveries = 0`.
+- **Resultado**: sin regresión (+1 test); la regla §0.1 no tiene excepciones y
+  el contrato de fixtures pierde un fixture redundante.
+- **Seguridad**: `revision-seguridad` sin hallazgos.
+- **Deuda**: ninguna nueva; D-007 sigue mitigada, no cerrada.
+- **Evidencia**: `.local/evidencia/C-009/` (`resumen.md`,
+  `revision-seguridad.md`, `playwright-full.txt`, `healing-summary.txt`,
+  `guard-global.txt`, `guard-locators.txt`, `tsc.txt`, `d007-check.txt`) y
+  `.local/evidencia/evidencia-evaluacion-2026-10-02-c009.md`.
+- **Git**: commits T-07 `b6ea7b4` y T-08 `ec81943` con tags
+  `spec-product-t07/t08`; merge `--no-ff` a `develop` + tag `spec-product`
+  reapuntado al merge final; PR #3 (`develop` → `main`) actualizado.
