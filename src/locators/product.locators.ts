@@ -123,6 +123,18 @@ export const productLocators = {
     ],
   } satisfies LocatorSpec,
 
+  productCartLink: {
+    key: 'productCartLink',
+    description: 'Enlace "View Cart" del modal de producto agregado (D-004)',
+    action: 'click',
+    sourceFile: SOURCE,
+    candidates: [
+      //@heal-target:productCartLink
+      { strategy: 'role', role: 'link', name: 'View Cart', within: 'div.modal-body' },
+      { strategy: 'css', value: 'a[href="/view_cart"]' },
+    ],
+  } satisfies LocatorSpec,
+
   productSuccessAddtoCart: {
     key: 'productSuccessAddtoCart',
     description: 'Mensaje "Added!" del modal de confirmación de carrito',
