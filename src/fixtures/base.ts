@@ -3,7 +3,6 @@ import { LoginPage } from '../pages/login.page';
 import { SignupPage } from '../pages/signup.page';
 import { ProductPage } from '../pages/product.page';
 import { CartPage } from '../pages/cart.page';
-import { CheckoutPage } from '../pages/checkout.page';
 import { Healer} from '../healing/healer'
 import { loadHealingConfig, type HealingConfig } from '../healing/config'
 import { NavbarComponent } from '../components/navbar.component';
@@ -14,8 +13,7 @@ type MyFixtures = {
     navbar:NavbarComponent,
     productPage: ProductPage,
     cartPage: CartPage,
-    cartWithProduct: CartPage,
-    checkoutWithProduct: CheckoutPage
+    cartWithProduct: CartPage
 };
 
 type HealingFixtures = {
@@ -81,22 +79,14 @@ export const test = base.extend<MyFixtures & HealingFixtures & ThrottleFixtures>
         await use(cartPage);
     },
     cartWithProduct: async ({ productPage, cartPage }, use) => {
+        await cartPage.goto();
+        await cartPage.clearCart();
         await productPage.goto();
         await productPage.addProductToCart('Blue Top');
         await cartPage.goto();
         const row = await cartPage.productRow('Blue Top');
         await expect(row, 'El carrito debe mostrar la fila del producto agregado').toBeVisible();
         await use(cartPage);
-    },
-    checkoutWithProduct: async ({ cartPage, productPage, page, healer }, use) => {
-        await cartPage.goto();
-        await cartPage.clearCart();
-        await productPage.goto();
-        await productPage.addProductToCart('Blue Top');
-        await cartPage.goto();
-        await cartPage.checkout();
-        await page.waitForURL(/\/checkout/);
-        await use(new CheckoutPage(page, healer));
     }
 });
 

@@ -1,7 +1,8 @@
 import { type Page, type Locator, expect } from "@playwright/test";
 import type { Healer } from "../healing";
-import { candidateToLocator, cssCandidateIndex } from "../healing/locator-factory";
+import { cssCandidateIndex } from "../healing/locator-factory";
 import { cartLocators } from "../locators/cart.locators";
+import { CheckoutPage } from "./checkout.page";
 
 /**
  * POM del carrito y su checkout invitado.
@@ -26,6 +27,17 @@ export class CartPage {
         await this.healer.click(cartLocators.checkoutButton);
     }
 
+    /**
+     * Con sesión: procede al checkout, espera `/checkout` y devuelve el
+     * `CheckoutPage`. El invitado no navega (abre el aviso), por eso el clic
+     * simple se conserva en `checkout()`.
+     */
+    async proceedToCheckout(): Promise<CheckoutPage> {
+        await this.healer.click(cartLocators.checkoutButton);
+        await this.page.waitForURL(/\/checkout/);
+        return new CheckoutPage(this.page, this.healer);
+    }
+
     /** Devuelve la fila del producto indicado en la tabla del carrito. */
     async productRow(product: string): Promise<Locator> {
         return this.healer.resolve(cartLocators.product(product));
@@ -36,7 +48,7 @@ export class CartPage {
      * (DEC-08), sin esperas fijas: cada clic espera a que baje el conteo.
      */
     async clearCart(): Promise<void> {
-        const deletes = candidateToLocator(this.page, cartLocators.cartDeleteButton.candidates[0]);
+        const deletes = this.healer.locatorAll(cartLocators.cartDeleteButton);
         while ((await deletes.count()) > 0) {
             const remaining = await deletes.count();
             await this.healer.click(cartLocators.cartDeleteButton);
