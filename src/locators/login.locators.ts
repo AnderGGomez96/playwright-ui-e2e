@@ -3,20 +3,6 @@ import type { LocatorSpec } from '../healing/types'
 const SOURCE = 'src/locators/login.locators.ts'
 
 /**
- * Selectores estables del área de login (contrato H-01).
- *
- * Fuente única para los candidatos `css` de los `LocatorSpec` y para las
- * aserciones de ausencia de los POM: estas últimas no pasan por el healer
- * (resolver un elemento ausente gastaría la escalera y podría curar de más).
- */
-export const loginStableSelectors = {
-    emailInput: 'input[data-qa="login-email"]',
-    logoutLink: 'a[href="/logout"]',
-    deleteAccountLink: 'a[href="/delete_account"]',
-    formError: '.login-form p',
-} as const
-
-/**
  * Locators del flujo de login y del estado de sesión.
  *
  * Primarios semánticos (`placeholder`/`role`/`text` con `within` real) y
@@ -32,7 +18,7 @@ export const loginLocators = {
         candidates: [
             //@heal-target:loginEmail
             { strategy: 'placeholder', value: 'Email Address', within: 'form[action="/login"]' },
-            { strategy: 'css', value: loginStableSelectors.emailInput },
+            { strategy: 'css', value: 'input[data-qa="login-email"]' },
         ]
     } satisfies LocatorSpec,
 
@@ -68,7 +54,7 @@ export const loginLocators = {
         candidates: [
             //@heal-target:loginError
             { strategy: 'text', value: 'Your email or password is incorrect!', within: '.login-form' },
-            { strategy: 'css', value: loginStableSelectors.formError },
+            { strategy: 'css', value: '.login-form p' },
         ]
     } satisfies LocatorSpec,
 
@@ -92,7 +78,7 @@ export const loginLocators = {
         candidates: [
             //@heal-target:logoutLink
             { strategy: 'role', role: 'link', name: 'Logout', within: '.shop-menu' },
-            { strategy: 'css', value: loginStableSelectors.logoutLink },
+            { strategy: 'css', value: 'a[href="/logout"]' },
         ]
     } satisfies LocatorSpec,
 
@@ -104,7 +90,7 @@ export const loginLocators = {
         candidates: [
             //@heal-target:deleteAccountLink
             { strategy: 'role', role: 'link', name: 'Delete Account', within: '.shop-menu' },
-            { strategy: 'css', value: loginStableSelectors.deleteAccountLink },
+            { strategy: 'css', value: 'a[href="/delete_account"]' },
         ]
     } satisfies LocatorSpec,
 
