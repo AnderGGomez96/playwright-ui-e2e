@@ -5,7 +5,7 @@
  * y provee utilidades para describir candidatos en mensajes, eventos y prompts.
  */
 import type { Locator, Page } from '@playwright/test'
-import type { LocatorCandidate } from './types'
+import type { LocatorCandidate, LocatorSpec } from './types'
 
 function requireValue(candidate: LocatorCandidate): string {
   if (!candidate.value) {
@@ -56,6 +56,22 @@ export function candidateToLocator(page: Page, candidate: LocatorCandidate): Loc
     case 'css':
       return scope.locator(requireValue(candidate))
   }
+}
+
+/**
+ * Índice del primer candidato `css` del spec (el ancla estable para las
+ * aserciones de ausencia/presencia que no deben gastar la escalera).
+ *
+ * @param spec - Spec del que se busca el candidato `css`.
+ * @returns Índice del primer candidato con `strategy: 'css'`.
+ * @throws RangeError si el spec no declara ningún candidato `css`.
+ */
+export function cssCandidateIndex(spec: LocatorSpec): number {
+  const index = spec.candidates.findIndex((candidate) => candidate.strategy === 'css')
+  if (index === -1) {
+    throw new RangeError(`El spec "${spec.key}" no tiene candidato css`)
+  }
+  return index
 }
 
 /**
