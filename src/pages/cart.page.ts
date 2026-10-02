@@ -1,6 +1,6 @@
 import { type Page, type Locator, expect } from "@playwright/test";
 import type { Healer } from "../healing";
-import { candidateToLocator, cssCandidateIndex } from "../healing/locator-factory";
+import { cssCandidateIndex } from "../healing/locator-factory";
 import { cartLocators } from "../locators/cart.locators";
 
 /**
@@ -36,7 +36,7 @@ export class CartPage {
      * (DEC-08), sin esperas fijas: cada clic espera a que baje el conteo.
      */
     async clearCart(): Promise<void> {
-        const deletes = candidateToLocator(this.page, cartLocators.cartDeleteButton.candidates[0]);
+        const deletes = this.healer.locatorAll(cartLocators.cartDeleteButton);
         while ((await deletes.count()) > 0) {
             const remaining = await deletes.count();
             await this.healer.click(cartLocators.cartDeleteButton);

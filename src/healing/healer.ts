@@ -135,6 +135,28 @@ export class Healer {
   }
 
   /**
+   * Deriva un `Locator` multi-match de Playwright desde un candidato del
+   * `LocatorSpec`, SIN `.first()`, sin recorrer la escalera de healing
+   * (cadena/caché/IA), sin gobernanza, sin eventos, sin parches y sin
+   * `waitFor`. Traducción pura para enumerar colecciones (contrato H-01);
+   * el consumidor controla el alcance con `.all()`, `.count()` o `.nth()`.
+   *
+   * @param spec - Spec origen; se usa `spec.candidates[index]`.
+   * @param index - Índice del candidato (default 0 = primario).
+   * @returns `Locator` sin `.first()`, que puede coincidir con varios elementos.
+   * @throws RangeError si `index` está fuera de `spec.candidates`.
+   */
+  locatorAll(spec: LocatorSpec, index = 0): Locator {
+    if (index < 0 || index >= spec.candidates.length) {
+      throw new RangeError(
+        `Índice ${index} fuera de rango para el spec "${spec.key}" ` +
+          `(candidates.length = ${spec.candidates.length})`,
+      )
+    }
+    return candidateToLocator(this.page, spec.candidates[index])
+  }
+
+  /**
    * Recorre la escalera de resolución y devuelve el primer locator funcional.
    *
    * @param spec - Locator a resolver.

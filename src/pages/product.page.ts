@@ -1,6 +1,6 @@
 import { type Page, type Locator, expect } from "@playwright/test";
 import type { Healer } from "../healing";
-import { candidateToLocator, cssCandidateIndex } from "../healing/locator-factory";
+import { cssCandidateIndex } from "../healing/locator-factory";
 import { productLocators } from "../locators/product.locators";
 import { CATEGORIES, type ProductDetail } from "../constant/product-data";
 import type { NavbarComponent } from "../components/navbar.component";
@@ -41,7 +41,7 @@ export class ProductPage {
      * del `LocatorSpec` a un `Locator` multi-match, sin selector literal).
      */
     async resultCards(): Promise<Locator[]> {
-        const cards = candidateToLocator(this.page, productLocators.productCards.candidates[0]);
+        const cards = this.healer.locatorAll(productLocators.productCards);
         await this.page.waitForLoadState('domcontentloaded');
         return cards.all();
     }
@@ -80,7 +80,7 @@ export class ProductPage {
      * indexado por el nombre canónico de la marca (p. ej. `Polo` -> 6).
      */
     async brandSidebarCounts(): Promise<Record<string, number>> {
-        const links = candidateToLocator(this.page, productLocators.brandLinks.candidates[0]);
+        const links = this.healer.locatorAll(productLocators.brandLinks);
         await this.page.waitForLoadState('domcontentloaded');
         const counts: Record<string, number> = {};
         for (const link of await links.all()) {
@@ -96,7 +96,7 @@ export class ProductPage {
 
     /** Lee los enlaces del acordeón de categorías (`label` + `href`). */
     async categorySidebar(): Promise<{ label: string; href: string }[]> {
-        const links = candidateToLocator(this.page, productLocators.categoryLinks.candidates[0]);
+        const links = this.healer.locatorAll(productLocators.categoryLinks);
         await this.page.waitForLoadState('domcontentloaded');
         const entries: { label: string; href: string }[] = [];
         for (const link of await links.all()) {
@@ -110,7 +110,7 @@ export class ProductPage {
 
     /** Devuelve los `href` de las fichas de detalle de las tarjetas del listado. */
     async resultDetailUrls(): Promise<string[]> {
-        const links = candidateToLocator(this.page, productLocators.productDetailLinks.candidates[0]);
+        const links = this.healer.locatorAll(productLocators.productDetailLinks);
         await this.page.waitForLoadState('domcontentloaded');
         const hrefs: string[] = [];
         for (const link of await links.all()) {
