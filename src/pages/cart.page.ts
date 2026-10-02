@@ -2,6 +2,7 @@ import { type Page, type Locator, expect } from "@playwright/test";
 import type { Healer } from "../healing";
 import { cssCandidateIndex } from "../healing/locator-factory";
 import { cartLocators } from "../locators/cart.locators";
+import { CheckoutPage } from "./checkout.page";
 
 /**
  * POM del carrito y su checkout invitado.
@@ -24,6 +25,17 @@ export class CartPage {
     /** Pulsa el control de checkout (invitado abre el aviso; con sesión navega). */
     async checkout(): Promise<void> {
         await this.healer.click(cartLocators.checkoutButton);
+    }
+
+    /**
+     * Con sesión: procede al checkout, espera `/checkout` y devuelve el
+     * `CheckoutPage`. El invitado no navega (abre el aviso), por eso el clic
+     * simple se conserva en `checkout()`.
+     */
+    async proceedToCheckout(): Promise<CheckoutPage> {
+        await this.healer.click(cartLocators.checkoutButton);
+        await this.page.waitForURL(/\/checkout/);
+        return new CheckoutPage(this.page, this.healer);
     }
 
     /** Devuelve la fila del producto indicado en la tabla del carrito. */
